@@ -5,95 +5,233 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>مبدل سند سپیدار</title>
 <style>
+/* ---------- Design tokens (based on the supplied design brief) ---------- */
 :root{
-  --bg:#f5f6f8; --card:#ffffff; --text:#1c2430; --muted:#657084; --line:#dfe3ea;
-  --accent:#1f6feb; --accent-ink:#ffffff; --ok:#1a7f37; --okbg:#e6f4ea; --err:#b42318; --errbg:#fdecea; --warn:#8a5a00; --warnbg:#fff4d6;
+  --primary:#93B027;      /* brand-like green: decorative fills, gradients */
+  --primary-strong:#608000; /* button fill (white text passes contrast) */
+  --primary-deep:#465C03;
+  --accent:#0088E6;       /* focus, links, active states */
+  --surface:#EDEDED;
+  --elevated:#EDEDED;
+  --field:#FFFFFF;
+  --text:#000000;
+  --muted:#555555;
+  --border:#999999;
+  --border-soft:#CACACA;
+  --ok:#16AC56;
+  --ok-bg:#E3F5EA;
+  --err:#C62828;
+  --err-bg:#FBE9E9;
+  --warn:#8A5A00;
+  --warn-bg:#FFF4D6;
+
+  --r-btn:5px;
+  --r-input:0 5px 5px 0;
+  --r-card:5px;
+
+  --s-1:4px; --s-2:8px; --s-3:12px; --s-4:16px; --s-5:20px; --s-6:28px; --s-7:44px;
+
+  --ease:ease-out;
+  --t-fast:.25s; --t-base:.3s; --t-slow:.6s;
+  --font:"SGFanoos",Vazirmatn,Tahoma,"Segoe UI",system-ui,sans-serif;
+  color-scheme:light;
 }
 @media (prefers-color-scheme: dark){
-  :root{ --bg:#14181f; --card:#1d232d; --text:#e8ecf2; --muted:#9aa5b6; --line:#2d3644;
-    --accent:#4c8dff; --accent-ink:#0b1220; --ok:#5fd07c; --okbg:#16301e; --err:#ff8a80; --errbg:#3a1c1a; --warn:#f2c14e; --warnbg:#3a2e12; }
+  :root:not([data-theme="light"]){
+    --surface:#1B1D1A; --elevated:#232622; --field:#2A2E28;
+    --text:#F2F2F2; --muted:#B5B5B5; --border:#5A5F57; --border-soft:#3E443B;
+    --primary-strong:#93B027; --accent:#4DB2FF;
+    --ok-bg:#16361F; --err-bg:#3A1A1A; --warn-bg:#3A2E10; --err:#FF8A80; --warn:#F2C14E;
+    color-scheme:dark;
+  }
 }
+
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Tahoma,"Segoe UI","Vazirmatn",system-ui,sans-serif;line-height:1.7}
-.wrap{max-width:900px;margin:0 auto;padding:24px 16px 48px}
-h1{font-size:22px;margin:0 0 4px}
-.sub{color:var(--muted);margin:0 0 20px;font-size:14px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:16px}
-.step{font-size:13px;color:var(--muted);margin-bottom:8px}
-.toggle{display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none}
+body{
+  margin:0;min-height:100vh;background:var(--surface);color:var(--text);
+  font-family:var(--font);font-size:14px;font-weight:400;line-height:2;
+  overflow-x:hidden;-webkit-text-size-adjust:100%;
+}
+:focus-visible{outline:auto 3px var(--accent);outline-offset:3px}
+
+.wrap{max-width:960px;margin:0 auto;padding:var(--s-6) var(--s-4) var(--s-7)}
+
+/* ---------- Header ---------- */
+.hero{margin-bottom:var(--s-6)}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:var(--s-2);padding:var(--s-1) var(--s-3);
+  border:1px solid var(--border);border-radius:var(--r-btn);font-size:12px;color:var(--muted);line-height:2;
+}
+.eyebrow .dot{width:8px;height:8px;border-radius:50%;background:var(--ok)}
+h1{
+  font-size:24px;font-weight:700;line-height:1.4;margin:var(--s-3) 0 var(--s-2);
+  background:linear-gradient(90deg,var(--primary-deep),var(--primary-strong));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.sub{color:var(--muted);margin:0;max-width:680px}
+
+/* ---------- Cards ---------- */
+.card{
+  background:var(--elevated);border:1px solid var(--border-soft);border-radius:var(--r-card);
+  padding:var(--s-5) var(--s-6);margin-bottom:var(--s-4);
+  transition:border-color var(--t-base) var(--ease);
+}
+.card:hover{border-color:var(--border)}
+.card-head{display:flex;align-items:center;gap:var(--s-3);margin-bottom:var(--s-3);flex-wrap:wrap}
+.num{
+  flex:none;width:28px;height:28px;border-radius:var(--r-btn);display:grid;place-items:center;
+  font-size:14px;font-weight:700;color:#FFFFFF;background:var(--primary-strong);
+}
+.step{font-size:18px;font-weight:700;line-height:1.4;margin:0}
+
+/* ---------- Toggle ---------- */
+.toggle{display:flex;align-items:center;gap:var(--s-3);cursor:pointer;user-select:none;position:relative}
 .toggle input{position:absolute;opacity:0;width:0;height:0}
-.sw{width:46px;height:26px;border-radius:13px;background:var(--line);position:relative;flex:none;transition:.15s}
-.sw::after{content:"";position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.15s}
+.sw{
+  width:48px;height:26px;border-radius:13px;background:var(--border-soft);position:relative;flex:none;
+  transition:background var(--t-base) var(--ease);
+}
+.sw::after{
+  content:"";position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;
+  background:#FFFFFF;transition:right var(--t-base) var(--ease);
+}
 .toggle input:checked + .sw{background:var(--accent)}
-.toggle input:checked + .sw::after{right:23px}
-.toggle input:focus-visible + .sw{outline:2px solid var(--accent);outline-offset:2px}
-.toggle b{font-size:16px}
-.hint{color:var(--muted);font-size:13px;margin-top:6px}
-.drop{border:2px dashed var(--line);border-radius:12px;padding:28px 12px;text-align:center;cursor:pointer;transition:.15s}
-.drop:hover,.drop.over{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 6%,transparent)}
-.drop strong{display:block;font-size:16px;margin-bottom:4px}
-.drop span{color:var(--muted);font-size:13px}
-button,.btn{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--text);padding:7px 14px;border-radius:8px;cursor:pointer}
-button:hover{border-color:var(--accent)}
-button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
-button.primary:disabled{opacity:.45;cursor:not-allowed}
-.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.toggle input:checked + .sw::after{right:25px}
+.toggle input:focus-visible + .sw{outline:auto 3px var(--accent);outline-offset:3px}
+.toggle b{font-size:16px;font-weight:700}
+.hint{color:var(--muted);font-size:14px;margin-top:var(--s-2);padding-inline-start:60px}
+
+/* ---------- Buttons ---------- */
+button,.btn{
+  font:inherit;font-size:14px;line-height:2;display:inline-flex;align-items:center;gap:var(--s-2);cursor:pointer;
+  padding:10.71px 12.6px;border-radius:var(--r-btn);border:1px solid var(--border);
+  background:var(--field);color:var(--text);font-weight:400;
+  transition:transform var(--t-fast) var(--ease),box-shadow var(--t-fast) var(--ease),border-color var(--t-fast) var(--ease),background var(--t-fast) var(--ease);
+}
+button svg{width:16px;height:16px;flex:none}
+button:hover{transform:scale(1.03);box-shadow:0 0 0 1px rgba(10,10,10,.5);border-color:var(--text)}
+button:active{transform:scale(.98)}
+button.primary{background:var(--primary-strong);color:#FFFFFF;border-color:var(--primary-strong);font-weight:700}
+button.primary:hover{box-shadow:0 0 0 1px rgba(10,10,10,.5);background:var(--primary-deep);border-color:var(--primary-deep)}
+button.primary:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+button:disabled{cursor:not-allowed}
+.row{display:flex;gap:var(--s-3);flex-wrap:wrap;align-items:center}
 .sp{flex:1}
-.file{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-top:10px}
-.file .name{font-weight:600;word-break:break-all}
-.pill{display:inline-block;font-size:12px;padding:1px 8px;border-radius:10px;margin-inline-start:6px}
-.pill.ok{background:var(--okbg);color:var(--ok)} .pill.err{background:var(--errbg);color:var(--err)}
-.stats{display:flex;gap:18px;flex-wrap:wrap;color:var(--muted);font-size:13px;margin:6px 0}
-.stats b{color:var(--text)}
-.msg{border-radius:8px;padding:8px 12px;font-size:13px;margin-top:8px}
-.msg.err{background:var(--errbg);color:var(--err)} .msg.warn{background:var(--warnbg);color:var(--warn)}
-.msg ul{margin:0;padding-inline-start:18px}
-.tablewrap{overflow-x:auto;margin-top:8px;border:1px solid var(--line);border-radius:8px;direction:ltr}
+
+/* ---------- Templates ---------- */
+.templates{margin-top:var(--s-4);padding-top:var(--s-4);border-top:1px solid var(--border-soft)}
+.templates .label{font-size:14px;color:var(--muted);margin-bottom:var(--s-2)}
+
+/* ---------- Drop zone ---------- */
+.drop{
+  border-radius:var(--r-card);padding:var(--s-7) var(--s-4);text-align:center;cursor:pointer;
+  border:1px dashed var(--border);background:var(--field);
+  transition:border-color var(--t-base) var(--ease),background var(--t-base) var(--ease),transform var(--t-base) var(--ease);
+}
+.drop:hover,.drop:focus-visible,.drop.over{border-color:var(--accent);border-style:solid;transform:scale(1.01)}
+.drop:focus-visible{outline:auto 3px var(--accent);outline-offset:3px}
+.drop.over{background:#E6F3FC}
+.drop .orb{
+  width:56px;height:56px;margin:0 auto var(--s-3);border-radius:var(--r-btn);display:grid;place-items:center;
+  background:linear-gradient(135deg,#A7D225,#465C03);color:#FFFFFF;
+}
+.drop .orb svg{width:28px;height:28px}
+.drop strong{display:block;font-size:18px;font-weight:700;line-height:1.4;margin-bottom:var(--s-2)}
+.drop span{color:var(--muted);font-size:14px}
+
+/* ---------- Results ---------- */
+.file{
+  border:1px solid var(--border-soft);border-radius:var(--r-card);padding:var(--s-4) var(--s-5);margin-top:var(--s-3);
+  background:var(--field);transition:border-color var(--t-base) var(--ease);
+}
+.file:hover{border-color:var(--border)}
+.file .name{font-weight:700;word-break:break-all;font-size:16px;line-height:1.4}
+.pill{
+  display:inline-flex;align-items:center;gap:var(--s-1);font-size:12px;font-weight:700;line-height:2;
+  padding:0 var(--s-2);border-radius:var(--r-btn);margin-inline-start:var(--s-2);vertical-align:middle;
+}
+.pill.ok{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok)}
+.pill.err{background:var(--err-bg);color:var(--err);border:1px solid var(--err)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:var(--s-3);margin:var(--s-3) 0 var(--s-1)}
+.stats span{
+  display:flex;flex-direction:column;gap:0;padding:var(--s-3) var(--s-4);border-radius:var(--r-btn);
+  background:var(--surface);border:1px solid var(--border-soft);color:var(--muted);font-size:12px;
+}
+.stats b{color:var(--text);font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;direction:ltr;text-align:start;line-height:1.4}
+.msg{border-radius:var(--r-btn);padding:var(--s-2) var(--s-3);font-size:14px;margin-top:var(--s-3);border:1px solid transparent}
+.msg.err{background:var(--err-bg);color:var(--err);border-color:var(--err)}
+.msg.warn{background:var(--warn-bg);color:var(--warn);border-color:var(--warn)}
+.msg ul{margin:0;padding-inline-start:var(--s-4)}
+.msg li{margin:0}
+.tablewrap{overflow-x:auto;margin-top:var(--s-3);border:1px solid var(--border-soft);border-radius:var(--r-card);direction:ltr;background:var(--field)}
 table{border-collapse:collapse;font-size:12px;width:100%;white-space:nowrap}
-th,td{padding:4px 8px;border-bottom:1px solid var(--line);text-align:left}
-th{background:color-mix(in srgb,var(--line) 50%,transparent);position:sticky;top:0}
+th,td{padding:var(--s-1) var(--s-3);border-bottom:1px solid var(--border-soft);text-align:left;line-height:2}
+th{background:var(--surface);position:sticky;top:0;font-weight:700}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--surface)}
 td.n{text-align:right;font-variant-numeric:tabular-nums}
-.foot{color:var(--muted);font-size:12px;margin-top:20px;text-align:center}
-.hidden{display:none}
+
+.foot{color:var(--muted);font-size:12px;margin-top:var(--s-6);text-align:center}
+.hidden{display:none !important}
+
+@media (max-width:640px){
+  .wrap{padding:var(--s-4) var(--s-3) var(--s-6)}
+  .card{padding:var(--s-4)}
+  .hint{padding-inline-start:0}
+  .drop{padding:var(--s-6) var(--s-3)}
+  h1{font-size:22px}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{transition:none !important;animation:none !important}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>مبدل سند سپیدار</h1>
-  <p class="sub">فایل اکسل مرجع را بدهید، فایل کانورت آماده‌ی ورود به سپیدار را بگیرید. کاملاً آفلاین است و هیچ داده‌ای از رایانه‌ی شما خارج نمی‌شود.</p>
+  <header class="hero">
+    <span class="eyebrow"><span class="dot"></span>کاملاً آفلاین · بدون ارسال داده</span>
+    <h1>مبدل سند سپیدار</h1>
+    <p class="sub">فایل اکسل مرجع را بدهید؛ فایل کانورت آماده‌ی ورود به سپیدار را در چند ثانیه دریافت کنید.</p>
+  </header>
 
-  <div class="card">
-    <div class="step">۱ · نوع سند</div>
+  <section class="card">
+    <div class="card-head"><span class="num">۱</span><h2 class="step">نوع سند</h2></div>
     <label class="toggle">
       <input type="checkbox" id="three">
       <span class="sw"></span>
       <b id="threeLabel">سند دوخطی (بدون ارزش افزوده)</b>
     </label>
     <div class="hint" id="threeHint">برای اسناد دارای ارزش افزوده، این گزینه را روشن کنید.</div>
-    <div class="row" style="margin-top:12px">
-      <button id="tpl2">دانلود فایل مرجع نمونه (دوخطی)</button>
-      <button id="tpl3">دانلود فایل مرجع نمونه (سه‌خطی)</button>
+    <div class="templates">
+      <div class="label">فایل مرجع نمونه برای تکمیل:</div>
+      <div class="row">
+        <button id="tpl2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>نمونه دوخطی</button>
+        <button id="tpl3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>نمونه سه‌خطی</button>
+      </div>
     </div>
-  </div>
+  </section>
 
-  <div class="card">
-    <div class="step">۲ · فایل(های) مرجع</div>
+  <section class="card">
+    <div class="card-head"><span class="num">۲</span><h2 class="step">فایل(های) مرجع</h2></div>
     <div class="drop" id="drop" tabindex="0" role="button" aria-label="انتخاب فایل مرجع">
+      <div class="orb"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 17v-6m0 0-2.5 2.5M12 11l2.5 2.5"/></svg></div>
       <strong>فایل اکسل را اینجا رها کنید یا کلیک کنید</strong>
       <span>می‌توانید چند فایل را با هم انتخاب کنید؛ برای هر کدام یک فایل کانورت ساخته می‌شود.</span>
     </div>
     <input type="file" id="file" accept=".xlsx,.xlsm,.xls,.csv" multiple class="hidden">
-  </div>
+  </section>
 
-  <div class="card hidden" id="results">
-    <div class="row">
-      <div class="step" style="margin:0">۳ · نتیجه</div>
+  <section class="card hidden" id="results">
+    <div class="card-head">
+      <span class="num">۳</span><h2 class="step">نتیجه</h2>
       <span class="sp"></span>
-      <button id="dlAll" class="primary">دانلود همه</button>
-      <button id="clear">پاک کردن لیست</button>
+      <div class="row">
+        <button id="dlAll" class="primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>دانلود همه</button>
+        <button id="clear">پاک کردن لیست</button>
+      </div>
     </div>
     <div id="list"></div>
-  </div>
+  </section>
 
   <div class="foot">فایل کانورت با نام «کانورت - نام فایل مرجع» ذخیره می‌شود.</div>
 </div>
